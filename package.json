@@ -5,7 +5,7 @@
   "main": "caps.js",
   "scripts": {
     "test": "jest --coverage --verbose",
-    "lint": "eslint index.js __test__/ caps.js driver.js events.js vendor.js"
+    "lint": "eslint __test__/ caps.js driver.js events.js vendor.js"
   },
   "repository": {
     "type": "git",
