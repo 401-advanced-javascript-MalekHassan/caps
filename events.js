@@ -1,3 +1,8 @@
-const EE = require('events');
-// this will export one instance of the EE and will make all events work across files
-module.exports = new EE();
+'use strict';
+
+const Events = require('events');
+
+const eventsEmmiter = new Events(); // export the new instance
+
+// Global Events pool
+module.exports = eventsEmmiter;
