@@ -48,4 +48,4 @@ This application was build with Node.js and it includes:
 
 ## Change Log
 
-1-11-2020 10:00pm
+02-11-2020 10:00pm

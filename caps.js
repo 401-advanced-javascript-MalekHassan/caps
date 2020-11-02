@@ -26,13 +26,13 @@ function dispatchEvent(buffer) {
     socketPool[socket].write(buffer);
   }
   const message = JSON.parse(buffer.toString().trim());
-  if (message.event == 'pickup') {
+  if (message.event === 'pickup') {
     log('pickup', message);
   }
-  if (message.event == 'in-transit') {
+  if (message.event === 'in-transit') {
     log('in-transit', message);
   }
-  if (message.event == 'delivered') {
+  if (message.event === 'delivered') {
     log('delivered', message);
   }
 }

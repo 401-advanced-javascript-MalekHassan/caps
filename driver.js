@@ -8,10 +8,12 @@ const PORT = process.env.PORT || 4000;
 client.connect(PORT, HOST, () => {
   console.log('Driver Connected');
   client.on('data', (bufferData) => {
+    // console.log(bufferData, 'sssssssssssssssss');
     const dataObj = JSON.parse(bufferData);
     if (dataObj.event === 'pickup') {
       setTimeout(function () {
         console.log(`picked up ${dataObj.payload.orderID}`);
+        // console.log(dataObj.payload, 'ssssssssssssssssssssssss');
         const message = JSON.stringify({
           event: 'in-transit',
           payload: dataObj.payload,
