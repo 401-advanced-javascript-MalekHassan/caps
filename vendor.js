@@ -1,19 +1,34 @@
 'use strict';
-
-// everything will fall in here
-require('dotenv').config();
-const events = require('./events');
 const faker = require('faker');
-require('./caps');
-events.on('delivered', (payload) =>
-  console.log(`VENDOR: Thank you for delivering ${payload.id}`)
-);
-// user fake order every 5 min==>
-setInterval(function () {
-  events.emit('pickup', {
-    storeName: process.env.storeName || `TETE's store`,
-    customerName: faker.name.findName(),
-    address: faker.address.streetAddress(),
-    id: faker.random.number(),
+require('dotenv').config();
+const net = require('net');
+const client = new net.Socket();
+const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 4000;
+const storeName = process.env.STORE_NAME || 'test';
+
+client.connect(PORT, HOST, () => {
+  console.log('Vendor Connected');
+  setInterval(function () {
+    let message = JSON.stringify({
+      event: 'pickup',
+      payload: {
+        storeName,
+        orderID: faker.random.uuid(),
+        customer: faker.name.findName(),
+        address: faker.address.streetAddress(),
+      },
+    });
+    client.write(message);
+  }, 5000);
+
+  client.on('data', (bufferData) => {
+    const dataObj = JSON.parse(bufferData);
+    if (dataObj.event === 'delivered') {
+      console.log(`Thanks you for delivering ${dataObj.payload.orderID}`);
+    }
   });
-}, 5000);
+
+  client.on('close', () => console.log('Connection closed!'));
+  client.on('error', (err) => console.log('Logger Error', err.message));
+});

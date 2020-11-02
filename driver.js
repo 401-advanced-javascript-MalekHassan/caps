@@ -1,16 +1,34 @@
 'use strict';
+require('dotenv').config();
+const net = require('net');
+const client = new net.Socket();
+const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 4000;
 
-const events = require('./events');
-require('./caps');
-events.on('pickup', (payload) => handler(payload));
+client.connect(PORT, HOST, () => {
+  console.log('Driver Connected');
+  client.on('data', (bufferData) => {
+    const dataObj = JSON.parse(bufferData);
+    if (dataObj.event === 'pickup') {
+      setTimeout(function () {
+        console.log(`picked up ${dataObj.payload.orderID}`);
+        const message = JSON.stringify({
+          event: 'in-transit',
+          payload: dataObj.payload,
+        });
+        client.write(message);
 
-function handler(payload) {
-  setTimeout(() => {
-    console.log(`DRIVER: picked up ${payload.id}`);
-    events.emit('transit', payload);
-    setTimeout(() => {
-      console.log('Delivered');
-      events.emit('delivered', payload);
-    }, 3000);
-  }, 1000);
-}
+        setTimeout(function () {
+          console.log(`delivered up ${dataObj.payload.orderID}`);
+          const message = JSON.stringify({
+            event: 'delivered',
+            payload: dataObj.payload,
+          });
+          client.write(message);
+        }, 3000);
+      }, 1000);
+    }
+  });
+  client.on('close', () => console.log('Connection closed!'));
+  client.on('error', (err) => console.log('Logger Error', err.message));
+});
