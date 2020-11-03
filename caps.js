@@ -1,13 +1,32 @@
 'use strict';
 
-const events = require('./events');
-require('./vendor');
-require('./driver');
-events.on('pickup', (payload) => log('pickup', payload));
-events.on('transit', (payload) => log('transit', payload));
-events.on('delivered', (payload) => log('delivered', payload));
+const io = require('socket.io')(3000);
 
-function log(event, payload) {
+io.on('connection', (socket) => {
+  console.log('CORE', socket.id);
+});
+const caps = io.of('/caps');
+caps.on('connection', (socket) => {
+  console.log('connected', socket.id);
+  socket.on('join', (room) => {
+    console.log('registered as', room);
+    socket.join(room);
+  });
+  socket.on('pickup', (payload) => {
+    pickup('pickup', payload);
+    caps.emit('pickup', payload);
+  });
+  socket.on('in-transite', (payload) => {
+    pickup('in-transite', payload);
+    caps.to(payload.storeName).emit('in-transit', payload);
+  });
+  socket.on('delivered', (payload) => {
+    pickup('delivered', payload);
+    caps.to(payload.storeName).emit('delivered', payload);
+  });
+});
+
+function pickup(event, payload) {
   let time = new Date();
-  console.log('EVENT LOG', { event, time, payload });
+  console.log('Event', { event, time, payload });
 }

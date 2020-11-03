@@ -1,19 +1,24 @@
 'use strict';
-
-// everything will fall in here
-require('dotenv').config();
-const events = require('./events');
 const faker = require('faker');
-require('./caps');
-events.on('delivered', (payload) =>
-  console.log(`VENDOR: Thank you for delivering ${payload.id}`)
-);
-// user fake order every 5 min==>
+require('dotenv').config();
+const io = require('socket.io-client');
+const socket = io.connect('http://localhost:3000/caps');
+const storeName = process.env.STORE_NAME || 'test';
+
+socket.emit('join', storeName);
+socket.on('delivered', (data) => {
+  console.log(`Thank you for delivering ${data.id}`);
+});
+
 setInterval(function () {
-  events.emit('pickup', {
-    storeName: process.env.storeName || `TETE's store`,
-    customerName: faker.name.findName(),
-    address: faker.address.streetAddress(),
-    id: faker.random.number(),
+  let message = JSON.stringify({
+    event: 'pickup',
+    payload: {
+      storeName,
+      orderID: faker.random.uuid(),
+      customer: faker.name.findName(),
+      address: faker.address.streetAddress(),
+    },
   });
+  socket.emit('pickup', message);
 }, 5000);
