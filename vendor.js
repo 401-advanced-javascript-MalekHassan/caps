@@ -1,7 +1,6 @@
 'use strict';
 const faker = require('faker');
 require('dotenv').config();
-const net = require('net');
 const io = require('socket.io-client');
 const socket = io.connect('http://localhost:3000/caps');
 const storeName = process.env.STORE_NAME || 'test';
