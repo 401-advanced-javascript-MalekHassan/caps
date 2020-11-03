@@ -1,36 +1,17 @@
 'use strict';
-require('dotenv').config();
-const net = require('net');
-const client = new net.Socket();
-const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 4000;
 
-client.connect(PORT, HOST, () => {
-  console.log('Driver Connected');
-  client.on('data', (bufferData) => {
-    // console.log(bufferData, 'sssssssssssssssss');
-    const dataObj = JSON.parse(bufferData);
-    if (dataObj.event === 'pickup') {
-      setTimeout(function () {
-        console.log(`picked up ${dataObj.payload.orderID}`);
-        // console.log(dataObj.payload, 'ssssssssssssssssssssssss');
-        const message = JSON.stringify({
-          event: 'in-transit',
-          payload: dataObj.payload,
-        });
-        client.write(message);
-
-        setTimeout(function () {
-          console.log(`delivered up ${dataObj.payload.orderID}`);
-          const message = JSON.stringify({
-            event: 'delivered',
-            payload: dataObj.payload,
-          });
-          client.write(message);
-        }, 3000);
-      }, 1000);
-    }
-  });
-  client.on('close', () => console.log('Connection closed!'));
-  client.on('error', (err) => console.log('Logger Error', err.message));
+const io = require('socket.io-client');
+const socket = io.connect('http://localhost:3000/caps');
+socket.on('pickup', function (data) {
+  setTimeout(function () {
+    console.log(`DRIVER: Picked up ${data.id}`);
+    socket.emit('in-transit', data);
+  }, 1500);
+  setTimeout(function () {
+    console.log(`DRIVER: Delivered ${data.id}`);
+    socket.emit('delivered', data);
+  }, 3000);
+});
+socket.on('close', function () {
+  console.log('Logger Connection got closed');
 });
